@@ -64,3 +64,24 @@ This script validates:
 - skewness statistics
 - PAY_X unique values
 
+## Training the Model
+
+To train the Logistic Regression model with log-transformed features:
+
+python -m src.models.train_logreg --input data/raw/credit_default.xls
+
+This will:
+- Load the dataset
+- Perform 5-fold stratified cross-validation
+- Report mean and standard deviation of ROC-AUC
+- Train a holdout model (80/20 split)
+- Report holdout ROC-AUC
+
+## Model Comparison Summary
+Model	CV ROC-AUC	CV std	Precision@20%	Recall@20%
+Logistic (log-transformed)	0.747	0.005	0.55	0.497
+Random Forest	0.780	0.005	0.565	0.511
+
+The Random Forest model demonstrates superior ranking performance, suggesting non-linear structure in the problem. However, the Logistic model remains more interpretable and production-ready at this stage.
+
+
