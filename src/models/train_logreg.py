@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
@@ -29,7 +30,7 @@ def load_data(path):
 
     return (X,y)
 
-def build_model(X):
+def build_model(X, model):
     groups = {    
         "descriptive_no_numeric": ["SEX", "EDUCATION", "MARRIAGE"],
 
@@ -65,13 +66,29 @@ def build_model(X):
         ],
         remainder="drop"
     )
+    if (model == 'log_reg'):
+        log_model = Pipeline(steps=[
+            ("preprocessor", log_model_preprocessor),
+            ("classifier", LogisticRegression(max_iter=1000))
+        ])
+        return log_model
+    elif (model == 'rf'):
+        rf = RandomForestClassifier(
+            n_estimators=300,
+            max_depth=None,
+            min_samples_leaf=5,
+            random_state=42,
+            n_jobs=-1
+        )
 
-    log_model = Pipeline(steps=[
-        ("preprocessor", log_model_preprocessor),
-        ("classifier", LogisticRegression(max_iter=1000))
-    ])
+        rf_model = Pipeline([
+            ("preprocessor", log_model_preprocessor),
+            ("classifier", rf)
+        ])
+        return rf_model
+    else: return(ValueError)
     
-    return log_model
+    
 
 def main():
     args = parse_args()

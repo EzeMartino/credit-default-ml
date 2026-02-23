@@ -6,7 +6,7 @@ Binary classification task:
 Predict whether a client will default on their credit card payment next month.
 
 Target:
-`default\_payment\_next\_month`
+`default\\\\\\\_payment\\\\\\\_next\\\\\\\_month`
 
 * 1 = default
 * 0 = no default
@@ -92,7 +92,25 @@ This will:
 |Logistic (log-transformed)|0.747|0.005|0.55|0.497|
 |Random Forest|0.780|0.005|0.565|0.511|
 
-&nbsp;	
+ 
 
 The Random Forest model demonstrates superior ranking performance, suggesting non-linear structure in the problem. However, the Logistic model remains more interpretable and production-ready at this stage.
+
+
+
+## Baseline Comparison
+
+To run a baseline comparison between the Logistic Regression, Random Forest and a Dummy model
+
+python -m src.models.train\_baseline
+
+This will:
+
+* Load the dataset
+* Perform 5-fold stratified cross-validation for all models with different scorings
+* Create a table in the results variable for reporting
+* Create a report in reports/baseline\_results.json
+* The report will include mean and std deviation of ROC-AUC, PR-AUC and F1 score for the models
+
+
 
