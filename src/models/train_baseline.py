@@ -2,9 +2,9 @@ import pandas as pd
 import numpy as np
 
 from sklearn.dummy import DummyClassifier
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from src.models.train_logreg import build_model, load_data
-from src.models.evaluate import evaluate_model
+from src.models.evaluate import evaluate_cv_scores, evaluate_cv_thresholded
 
 import json
 from pathlib import Path
@@ -33,23 +33,33 @@ def main():
         "random_forest": rf_model,
     }
 
-    SCORINGS = ["roc_auc", "average_precision", "f1"]
-
+    SCORINGS = ["roc_auc", "average_precision"]
+    THRESHOLD = 0.6
+    
     results = {}
 
     for name, model in MODELS.items():
         results[name] = {}
-        for s in SCORINGS:
-            out = evaluate_model(model, X, y, cv, scoring=s)
-            results[name][s] = {
-                "mean": float(out["mean"]),
-                "std": float(out["std"])
-            }
+        results[name]["cv_score_metrics"] = evaluate_cv_scores(model, X, y, cv, SCORINGS)
+        results[name]["cv_threshold_metrics"] = evaluate_cv_thresholded(model, X, y, cv, threshold=THRESHOLD)
+    
     results = dict(sorted(results.items()))
+    
     Path("reports").mkdir(exist_ok=True)
 
     with open("reports/baseline_results.json", "w") as f:
         json.dump(results, f, indent=2)
+        
+    # Guardar y_true una sola vez
+    np.save("reports/oof_y_true.npy", y.to_numpy())
+
+    for name, model in MODELS.items():
+        if name == "dummy_most_frequent":
+            continue  # opcional, no aporta para threshold
+        y_proba_oof = cross_val_predict(
+            model, X, y, cv=cv, method="predict_proba", n_jobs=-1
+        )[:, 1]
+        np.save(f"reports/oof_{name}_proba.npy", y_proba_oof)
             
 if __name__ == "__main__":
     main()

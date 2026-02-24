@@ -1,44 +1,65 @@
 {
   "dummy_most_frequent": {
-    "roc_auc": {
-      "mean": 0.5,
-      "std": 0.0
+    "cv_score_metrics": {
+      "roc_auc": {
+        "mean": 0.5,
+        "std": 0.0
+      },
+      "average_precision": {
+        "mean": 0.2212,
+        "std": 6.666666666665932e-05
+      }
     },
-    "average_precision": {
-      "mean": 0.2212,
-      "std": 6.666666666665932e-05
-    },
-    "f1": {
-      "mean": 0.0,
-      "std": 0.0
+    "cv_threshold_metrics": {
+      "threshold": 0.6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "accuracy": 0.7788,
+      "roc_auc_oof": 0.5,
+      "pr_auc_oof": 0.2212
     }
   },
   "logreg_log_payamt": {
-    "roc_auc": {
-      "mean": 0.7470420099152552,
-      "std": 0.0050151111585677085
+    "cv_score_metrics": {
+      "roc_auc": {
+        "mean": 0.7470420098804784,
+        "std": 0.005015098628023782
+      },
+      "average_precision": {
+        "mean": 0.506697102773831,
+        "std": 0.0050175230115576605
+      }
     },
-    "average_precision": {
-      "mean": 0.5066970660702904,
-      "std": 0.005017205105436713
-    },
-    "f1": {
-      "mean": 0.36646940667737954,
-      "std": 0.0024265096376638556
+    "cv_threshold_metrics": {
+      "threshold": 0.6,
+      "precision": 0.6981436642453591,
+      "recall": 0.13034960819770947,
+      "f1": 0.21968253968253967,
+      "accuracy": 0.7951666666666667,
+      "roc_auc_oof": 0.7470461903389387,
+      "pr_auc_oof": 0.506013958479012
     }
   },
   "random_forest": {
-    "roc_auc": {
-      "mean": 0.7787765273946807,
-      "std": 0.00559461337569268
+    "cv_score_metrics": {
+      "roc_auc": {
+        "mean": 0.7787765273946807,
+        "std": 0.00559461337569268
+      },
+      "average_precision": {
+        "mean": 0.5559795966996248,
+        "std": 0.006997697645907166
+      }
     },
-    "average_precision": {
-      "mean": 0.5559795966996248,
-      "std": 0.006997697645907166
-    },
-    "f1": {
-      "mean": 0.4701453882251375,
-      "std": 0.007519163625227654
+    "cv_threshold_metrics": {
+      "threshold": 0.6,
+      "precision": 0.7188274153592072,
+      "recall": 0.26235684147076554,
+      "f1": 0.38441156988297637,
+      "accuracy": 0.8141333333333334,
+      "roc_auc_oof": 0.7786132078129503,
+      "pr_auc_oof": 0.5550162753121383
     }
   }
 }
