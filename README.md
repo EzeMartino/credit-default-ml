@@ -47,13 +47,14 @@ Performance is never discussed without:
 
 ## Project Structure
 
+```
 credit-default-ml/
-│
 ├── data/
 ├── notebooks/
 ├── reports/
 ├── src/
 ├── tests/
+```
 
 
 ## Setup

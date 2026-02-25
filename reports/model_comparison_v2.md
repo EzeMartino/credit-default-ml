@@ -64,10 +64,10 @@ Random Forest (baseline configuration) with threshold of 0.26
 #### 
 
 * Logistic -> 29.09% flagged -> 29,090 reviews
-* RF -> ~26.943% flagged -> 26.943 reviews
-* Δ = 2.147 fewer reviews
+* RF -> ~26.943% flagged -> 26,943 reviews
+* Δ = 2,147 fewer reviews
 Impact:
-* 2.147 saved reviews
+* 2,147 saved reviews
 * ~179 hs saved p/month aproximately ~1 FTE
 
 #### 
