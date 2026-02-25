@@ -37,13 +37,13 @@ def find_threshold_subject_to_constraint(
     step: float = 0.001,
 ):
     """
-    Devuelve el threshold 'óptimo' bajo un constraint.
-    - Si min_recall está seteado: elegimos el threshold que MAXIMIZA precision con recall >= min_recall.
-      (equivalentemente: el threshold más alto que todavía cumple recall >= target).
-    - Si min_precision está seteado: elegimos el threshold que MAXIMIZA recall con precision >= min_precision.
+    Returnes the optimum threshold under a constraint.
+    - If min_recall is set: we choose the threshold that MAXIMIZES precision with recall >= min_recall.
+      (equivalently: the highest threshold that still achieves recall >= target).
+    - If min_precision is set: we choose the threshold that MAXIMIZES recall with precision >= min_precision.
     """
     if (min_recall is None) == (min_precision is None):
-        raise ValueError("Seteá exactamente uno: min_recall o min_precision")
+        raise ValueError("Set exactly one: min_recall o min_precision")
 
     thresholds = np.arange(1.0, -1e-12, -step)  # de 1.0 a 0.0 inclusive
 
@@ -54,14 +54,14 @@ def find_threshold_subject_to_constraint(
         m = _metrics_at_threshold(y_true, y_proba, float(t))
 
         if min_recall is not None:
-            # constraint: recall >= target ; objetivo: maximizar precision
+            # constraint: recall >= target ; goal: maximize precision
             if m["recall"] >= min_recall:
                 key = m["precision"]
             else:
                 continue
 
         else:
-            # constraint: precision >= target ; objetivo: maximizar recall
+            # constraint: precision >= target ; goal: maximize recall
             if m["precision"] >= min_precision:
                 key = m["recall"]
             else:

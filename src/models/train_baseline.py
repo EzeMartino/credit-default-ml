@@ -55,7 +55,7 @@ def main():
 
     for name, model in MODELS.items():
         if name == "dummy_most_frequent":
-            continue  # opcional, no aporta para threshold
+            continue  # optional, it does not contribute to the threshold.
         y_proba_oof = cross_val_predict(
             model, X, y, cv=cv, method="predict_proba", n_jobs=-1
         )[:, 1]

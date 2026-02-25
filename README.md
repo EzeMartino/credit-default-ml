@@ -1,15 +1,17 @@
 # Credit Default ML
 
+
 ## Problem
 
 Binary classification task:
 Predict whether a client will default on their credit card payment next month.
 
 Target:
-`default\\\\\\\_payment\\\\\\\_next\\\\\\\_month`
+`default_payment_next_month`
 
 * 1 = default
 * 0 = no default
+
 
 ## Dataset
 
@@ -27,15 +29,21 @@ Target rate:
 * Positive class (default): 22.12%
 * Majority class baseline accuracy: 0.7788
 
-## Primary Metrics
 
-North Star metric:
+## Evaluation Philosophy
 
-* ROC-AUC
+Primary (ranking) metric:
+- ROC-AUC
 
-Operational metric:
+Operational constraint:
+- Threshold-based policy
+- Either Recall ≥ X
+- Or Precision ≥ X
 
-* Recall (class 1)
+Performance is never discussed without:
+- ROC-AUC (ranking quality)
+- Operational metric under explicit threshold
+
 
 ## Project Structure
 
@@ -48,13 +56,13 @@ credit-default-ml/
 ├── tests/
 
 
-
 ## Setup
 
 Create virtual environment:
 python -m venv venv
 venv\\Scripts\\activate
 pip install -r requirements.txt
+
 
 ## Data Profiling Script
 
@@ -71,6 +79,7 @@ This script validates:
 * skewness statistics
 * PAY\_X unique values
 
+
 ## Training the Model
 
 To train the Logistic Regression model with log-transformed features:
@@ -85,6 +94,7 @@ This will:
 * Train a holdout model (80/20 split)
 * Report holdout ROC-AUC
 
+
 ## Model Comparison Summary
 
 |Model|CV ROC-AUC|CV std|Precision@20%|Recall@20%|
@@ -92,10 +102,10 @@ This will:
 |Logistic (log-transformed)|0.747|0.005|0.55|0.497|
 |Random Forest|0.780|0.005|0.565|0.511|
 
- 
-
 The Random Forest model demonstrates superior ranking performance, suggesting non-linear structure in the problem. However, the Logistic model remains more interpretable and production-ready at this stage.
 
+> For operational constraint-based analysis, see:
+> reports/model_comparison_v2.md
 
 
 ## Baseline Comparison
@@ -104,13 +114,42 @@ To run a baseline comparison between the Logistic Regression, Random Forest and 
 
 python -m src.models.train\_baseline
 
-This will:
+This script:
+* Runs 5-fold stratified CV
+* Evaluates Dummy, Logistic and Random Forest
+* Computes ROC-AUC, PR-AUC and F1
+* Stores results in reports/baseline_results.json
 
-* Load the dataset
-* Perform 5-fold stratified cross-validation for all models with different scorings
-* Create a table in the results variable for reporting
-* Create a report in reports/baseline\_results.json
-* The report will include mean and std deviation of ROC-AUC, PR-AUC and F1 score for the models
+### Run threshold analysis
+python -m src.evaluation.threshold_analysis
+
+This script:
+* Generates out-of-fold probabilities
+* Searches thresholds under operational constraints:
+    * Maximize precision subject to Recall ≥ target
+    * Maximize recall subject to Precision ≥ target
+* Reports precision, recall, flagged_rate and confusion matrix
+* Saves results to reports/threshold_analysis.json
+
+### Key Findings
+- Logistic ROC-AUC: ~0.747
+- Random Forest ROC-AUC: ~0.779
+- Under Recall ≥ 0.60 → RF reduces operational workload.
+- Under Precision ≥ 0.50 → trade-off depends on FN cost.
+
+## Executive Summary
+
+- Logistic Regression provides strong baseline performance and interpretability.
+- Random Forest improves ranking quality and operational efficiency under recall constraints.
+- Final model choice depends on regulatory interpretability requirements vs operational cost priorities.
 
 
+## Reproducibility
 
+From a clean environment:
+
+1. Install dependencies
+2. Run data profiling
+3. Run baseline comparison
+4. Run threshold analysis
+5. Review reports/ folder

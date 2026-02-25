@@ -12,7 +12,7 @@ import numpy as np
 
 def evaluate_cv_scores(model, X, y, cv, scorings):
     """
-    Métricas basadas en score (no requieren threshold): ROC-AUC, PR-AUC, etc.
+    Metrics based in score (do not require threshold): ROC-AUC, PR-AUC, etc.
     """
     out = cross_validate(
         model,
@@ -35,8 +35,8 @@ def evaluate_cv_scores(model, X, y, cv, scorings):
 
 def evaluate_cv_thresholded(model, X, y, cv, threshold=0.5):
     """
-    Métricas de decisión @ threshold: precision/recall/f1/accuracy.
-    Usa probabilidades out-of-fold con cross_val_predict.
+    Decision metrics @ threshold: precision/recall/f1/accuracy.
+    Uses probabilities out-of-fold with cross_val_predict.
     """
     y_proba = cross_val_predict(
         model,
@@ -55,7 +55,7 @@ def evaluate_cv_thresholded(model, X, y, cv, threshold=0.5):
         "recall": float(recall_score(y, y_pred, zero_division=0)),
         "f1": float(f1_score(y, y_pred, zero_division=0)),
         "accuracy": float(accuracy_score(y, y_pred)),
-        # opcional: guardar también score-based global sobre OOF
+        # optional: also save score-based global on OOF
         "roc_auc_oof": float(roc_auc_score(y, y_proba)),
         "pr_auc_oof": float(average_precision_score(y, y_proba)),
     }
