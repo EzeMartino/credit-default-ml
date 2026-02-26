@@ -4,16 +4,24 @@ import numpy as np
 from sklearn.dummy import DummyClassifier
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from src.models.train_logreg import build_model, load_data
-from src.models.evaluate import evaluate_cv_scores, evaluate_cv_thresholded
+from src.evaluations.evaluate import evaluate_cv_scores, evaluate_cv_thresholded
 
 import json
 from pathlib import Path
+import argparse
 
+def parse_args():
+    p = argparse.ArgumentParser()
+    p.add_argument("--output_dir", default="reports")
+    return p.parse_args()
 
 RANDOM_STATE = 42
 
 def main():
-
+    args = parse_args()
+    REPORTS = Path(args.output_dir)
+    REPORTS.mkdir(parents=True, exist_ok=True)
+    
     X, y = load_data("data/raw/credit_default.xls")
 
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
@@ -47,11 +55,11 @@ def main():
     
     Path("reports").mkdir(exist_ok=True)
 
-    with open("reports/baseline_results.json", "w") as f:
+    with open(REPORTS / "baseline_results.json", "w") as f:
         json.dump(results, f, indent=2)
         
     # Guardar y_true una sola vez
-    np.save("reports/oof_y_true.npy", y.to_numpy())
+    np.save(REPORTS / "oof_y_true.npy", y.to_numpy())
 
     for name, model in MODELS.items():
         if name == "dummy_most_frequent":
@@ -59,7 +67,7 @@ def main():
         y_proba_oof = cross_val_predict(
             model, X, y, cv=cv, method="predict_proba", n_jobs=-1
         )[:, 1]
-        np.save(f"reports/oof_{name}_proba.npy", y_proba_oof)
+        np.save(REPORTS / f"oof_{name}_proba.npy", y_proba_oof)
             
 if __name__ == "__main__":
     main()

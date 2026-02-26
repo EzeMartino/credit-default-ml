@@ -27,6 +27,9 @@ def load_data(path):
     
     X = df.drop(columns=[TARGET, "ID"], errors="ignore")
     y = df[TARGET]
+    
+    X["credit_utilization"] = X["BILL_AMT1"] / X["LIMIT_BAL"]
+    X["credit_utilization"] = X["credit_utilization"].clip(0, 5)
 
     return (X,y)
 
@@ -43,7 +46,7 @@ def build_model(X, model):
         "pay_amt": ["PAY_AMT1", "PAY_AMT2", "PAY_AMT3", "PAY_AMT4", "PAY_AMT5", "PAY_AMT6"],
     }
 
-    numeric_no_log = groups["numeric"]+groups["pay"]+groups["bill_amt"]
+    numeric_no_log = (groups["numeric"]+groups["pay"]+groups["bill_amt"]+["credit_utilization"])
 
     numeric_log = groups["pay_amt"]
 
