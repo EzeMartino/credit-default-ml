@@ -113,7 +113,7 @@ The Random Forest model demonstrates superior ranking performance, suggesting no
 
 To run a baseline comparison between the Logistic Regression, Random Forest and a Dummy model
 
-python -m src.models.train\_baseline
+python -m src.models.train\_baseline --output_dir reports/
 
 This script:
 * Runs 5-fold stratified CV
@@ -122,7 +122,7 @@ This script:
 * Stores results in reports/baseline_results.json
 
 ### Run threshold analysis
-python -m src.evaluation.threshold_analysis
+python -m src.evaluations.threshold_analysis --output_dir reports/
 
 This script:
 * Generates out-of-fold probabilities
@@ -144,6 +144,33 @@ This script:
 - Random Forest improves ranking quality and operational efficiency under recall constraints.
 - Final model choice depends on regulatory interpretability requirements vs operational cost priorities.
 
+## Feature Engineering Improvements
+
+An explicit interaction feature was introduced:
+
+utilization_x_pay0 = credit_utilization × PAY_0
+
+This interaction models financial stress under delayed payment conditions.
+
+Impact on Logistic Regression:
+
+- ROC-AUC: 0.747 → 0.756
+- PR-AUC: 0.507 → 0.516
+- Reduced flagged_rate under Recall ≥ 0.60
+- Increased recall under Precision ≥ 0.50
+
+This demonstrates the importance of explicit interaction terms for linear models.
+
+## Calibration Analysis
+python -m src.evaluations.calibration_analysis --output_dir reports/
+
+Brier Score:
+- Logistic: 0.1425
+- Random Forest: 0.1346
+
+Random Forest showed slightly better probability calibration, especially in high-risk regions.
+
+Calibration matters because threshold-based operational policies rely on probability stability.
 
 ## Reproducibility
 
@@ -153,4 +180,22 @@ From a clean environment:
 2. Run data profiling
 3. Run baseline comparison
 4. Run threshold analysis
-5. Review reports/ folder
+5. Run Calibration analysis
+6. Review reports/ folder
+
+## Testing
+
+The project includes a minimal pytest suite to ensure pipeline integrity.
+
+Run tests with:
+
+pytest -q
+
+The test suite validates:
+
+- Data loading and target consistency
+- Logistic pipeline training on a small subset
+- Stratified cross-validation preserves class distribution
+- Threshold analysis output schema
+
+Tests are designed to be lightweight (< 15 seconds) and prevent silent pipeline regressions. All tests must pass before pushing new experimental changes.
