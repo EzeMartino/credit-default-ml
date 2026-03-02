@@ -1,7 +1,7 @@
 def test_stratified_kfold_preserves_rate():
     import numpy as np
     from sklearn.model_selection import StratifiedKFold
-    from src.models.train_logreg import load_data
+    from src.credit_ml.models.train_logreg import load_data
 
     X, y = load_data("data/raw/credit_default.xls")
     y = y.to_numpy()

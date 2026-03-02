@@ -85,7 +85,7 @@ This script validates:
 
 To train the Logistic Regression model with log-transformed features:
 
-python -m src.models.train\_logreg --input data/raw/credit\_default.xls
+python -m models.train\_logreg --input data/raw/credit\_default.xls
 
 This will:
 
@@ -113,7 +113,7 @@ The Random Forest model demonstrates superior ranking performance, suggesting no
 
 To run a baseline comparison between the Logistic Regression, Random Forest and a Dummy model
 
-python -m src.models.train\_baseline --output_dir reports/
+python -m models.train\_baseline --output_dir reports/
 
 This script:
 * Runs 5-fold stratified CV
@@ -122,7 +122,7 @@ This script:
 * Stores results in reports/baseline_results.json
 
 ### Run threshold analysis
-python -m src.evaluations.threshold_analysis --output_dir reports/
+python -m evaluations.threshold_analysis --output_dir reports/
 
 This script:
 * Generates out-of-fold probabilities
@@ -162,7 +162,7 @@ Impact on Logistic Regression:
 This demonstrates the importance of explicit interaction terms for linear models.
 
 ## Calibration Analysis
-python -m src.evaluations.calibration_analysis --output_dir reports/
+python -m evaluations.calibration_analysis --output_dir reports/
 
 Brier Score:
 - Logistic: 0.1425

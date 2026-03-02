@@ -3,7 +3,7 @@
 Load the UCI Credit Card Default dataset and generate a lightweight profiling report.
 
 Usage:
-  python -m src.data.load_and_profile --input data/raw/credit_default.csv --out reports/profile_summary.json
+  python -m data.load_and_profile --input data/raw/credit_default.csv --out reports/profile_summary.json
 """
 
 from __future__ import annotations

@@ -1,5 +1,5 @@
 def test_load_data_basic():
-    from src.models.train_logreg import load_data, TARGET
+    from src.credit_ml.models.train_logreg import load_data, TARGET
 
     X, y = load_data("data/raw/credit_default.xls")
     assert len(X) == len(y)

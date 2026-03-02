@@ -3,8 +3,8 @@ import numpy as np
 
 from sklearn.dummy import DummyClassifier
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
-from src.models.train_logreg import build_model, load_data
-from src.evaluations.evaluate import evaluate_cv_scores, evaluate_cv_thresholded
+from credit_ml.models.train_logreg import build_model, load_data
+from credit_ml.evaluations.evaluate import evaluate_cv_scores, evaluate_cv_thresholded
 
 import json
 from pathlib import Path
