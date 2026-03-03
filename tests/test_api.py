@@ -70,3 +70,41 @@ def test_batch_partial_missing_returns_422():
     response = client.post("/predict", json=payload)
     
     assert response.status_code == 422
+    
+def test_predict_ignores_extra_columns():
+    payload = get_valid_payload()
+    payload["records"][0]["EXTRA_FIELD"] = 123
+
+    response = client.post("/predict", json=payload)
+    assert response.status_code == 200
+    
+def test_predict_null_value_returns_422():
+    payload = get_valid_payload()
+    payload["records"][0]["AGE"] = None
+
+    response = client.post("/predict", json=payload)
+    assert response.status_code == 422
+    
+def test_predict_missing_column_all_records_returns_422():
+    payload = get_valid_payload()
+    del payload["records"][0]["AGE"]
+
+    # we make sure that there is not another record that includes AGE
+    response = client.post("/predict", json=payload)
+    assert response.status_code == 422
+    detail = response.json()["detail"]
+    assert detail["msg"] == "missing required features"
+    assert "AGE" in detail["missing"]
+    
+def test_predict_missing_by_row_returns_422():
+    payload = get_valid_payload()
+    second = payload["records"][0].copy()
+    del second["AGE"]
+    payload["records"].append(second)
+
+    response = client.post("/predict", json=payload)
+    assert response.status_code == 422
+    detail = response.json()["detail"]
+    assert detail["msg"] == "missing required features in some records"
+    assert 1 in detail["rows_with_missing"]
+    assert "AGE" in detail["missing_by_row"]["1"]
