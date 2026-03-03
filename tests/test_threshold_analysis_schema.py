@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 def test_threshold_analysis_json_schema():
-    path = Path("reports/threshold_analysis.json")
+    path = Path("reports/UtilizationPAY_0_v1/threshold_analysis.json")
     assert path.exists()
 
     data = json.loads(path.read_text(encoding="utf-8"))
