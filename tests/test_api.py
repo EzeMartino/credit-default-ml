@@ -108,3 +108,20 @@ def test_predict_missing_by_row_returns_422():
     assert detail["msg"] == "missing required features in some records"
     assert 1 in detail["rows_with_missing"]
     assert "AGE" in detail["missing_by_row"]["1"]
+    
+def test_predict_batch_too_large_returns_422():
+    payload = get_valid_payload()
+
+    payload["records"] = payload["records"] * 2000
+
+    response = client.post("/predict", json=payload)
+
+    assert response.status_code == 422
+    
+def test_meta_endpoint():
+    r = client.get("/meta")
+    assert r.status_code == 200
+    data = r.json()
+    assert "model_type" in data
+    assert "threshold" in data
+    assert "features_expected" in data
