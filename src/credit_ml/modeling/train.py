@@ -8,8 +8,10 @@ from sklearn.metrics import roc_auc_score, brier_score_loss
 
 from credit_ml.config import MODEL_DIR, DEFAULT_THRESHOLD
 from credit_ml.features.build import TARGET_COL, add_features
+from credit_ml.modeling.artifacts import get_artifact_paths
 from credit_ml.modeling.pipeline import build_pipeline
 from credit_ml.data.io import load_raw_credit_xls
+from credit_ml.api.versioning import compute_model_version
 
 RAW_PATH = Path("data/raw/credit_default.xls")
 
@@ -74,6 +76,12 @@ def train_and_export() -> None:
     print(f"[OK] Exported: {pipeline_path}")
     print(f"[OK] Exported: {metadata_path}")
     print(f"[OK] ROC-AUC(val)={roc_auc:.4f} | Brier(val)={brier:.4f}")
+    
+    model_version = compute_model_version(pipeline_path, metadata_path)
+    metadata["model_version"] = model_version
+
+    with open(metadata_path, "w") as f:
+        json.dump(metadata, f, indent=2)
 
 
 if __name__ == "__main__":

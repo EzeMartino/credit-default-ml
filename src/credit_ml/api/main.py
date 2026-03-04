@@ -17,12 +17,14 @@ from credit_ml.config import DEFAULT_THRESHOLD
 from credit_ml.api.logging_conf import setup_logging
 from credit_ml.api.versioning import compute_model_version
 
-PIPELINE_PATH, METADATA_PATH = get_artifact_paths()
-MODEL_VERSION = compute_model_version(PIPELINE_PATH, METADATA_PATH)
-MAX_RECORDS = 1000
-
 pipe = get_pipeline()
 meta = get_metadata()
+
+PIPELINE_PATH, METADATA_PATH = get_artifact_paths()
+MODEL_VERSION = meta.get("model_version") or compute_model_version(PIPELINE_PATH, METADATA_PATH)
+MAX_RECORDS = 1000
+
+
 
 setup_logging()  # Configure logging at the start of the application
 logger = logging.getLogger("credit_ml.api")
