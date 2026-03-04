@@ -11,20 +11,25 @@ from contextlib import asynccontextmanager
 
 from credit_ml.api.schemas import PredictRequest, PredictResponse, Prediction
 from credit_ml.api.deps import get_pipeline, get_metadata
+from credit_ml.modeling.artifacts import get_artifact_paths
 from credit_ml.api.validation import validate_and_prepare_df
 from credit_ml.config import DEFAULT_THRESHOLD
 from credit_ml.api.logging_conf import setup_logging
+from credit_ml.api.versioning import compute_model_version
 
+PIPELINE_PATH, METADATA_PATH = get_artifact_paths()
+MODEL_VERSION = compute_model_version(PIPELINE_PATH, METADATA_PATH)
 MAX_RECORDS = 1000
+
 pipe = get_pipeline()
 meta = get_metadata()
 
 setup_logging()  # Configure logging at the start of the application
 logger = logging.getLogger("credit_ml.api")
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
     # ---- startup ----
     try:
         expected = meta.get("features_expected", [])
@@ -43,8 +48,7 @@ async def lifespan(app: FastAPI):
 
     # ---- shutdown ----
     logger.info("api_shutdown")
-
-
+    
 app = FastAPI(title="Credit Default ML API", version="0.1.0", lifespan=lifespan)
 
 @app.exception_handler(Exception)
@@ -66,6 +70,7 @@ def health():
 @app.get("/meta")
 def meta_info():
     return {
+        "model_version": MODEL_VERSION,
         "model_type": meta.get("model_type"),
         "trained_at": meta.get("trained_at"),
         "threshold": meta.get("threshold"),
@@ -81,26 +86,28 @@ def predict(payload: PredictRequest):
     n_records = len(payload.records)
         
     logger.info(
-        f"predict_request_received request_id={request_id} n_records={n_records}"
+        f"predict_request_received request_id={request_id} n_records={n_records} model_version={MODEL_VERSION}"
     )
     
     if n_records > MAX_RECORDS:
-            latency_ms = int((time.time() - t0) * 1000)
-            
-            logger.warning(
-                f"predict_request_too_large request_id={request_id} "
-                f"n_records={n_records} latency_ms={latency_ms} status=422"
-            )
-            
-            raise HTTPException(
-                status_code=422,
-                detail={
-                    "msg": "batch size exceeds limit",
-                    "max_records": MAX_RECORDS,
-                    "received": n_records,
-                    "request_id": request_id,
-                },
-            )
+        latency_ms = int((time.time() - t0) * 1000)
+         
+        logger.warning(
+            f"predict_request_too_large request_id={request_id} "
+            f"n_records={n_records} latency_ms={latency_ms} status=422 "
+            f"model_version={MODEL_VERSION}"
+        )
+          
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "msg": "batch size exceeds limit",
+                "max_records": MAX_RECORDS,
+                "received": n_records,
+                "request_id": request_id,
+                "model_version": MODEL_VERSION,
+            },
+        )
     
     try:
         df = pd.DataFrame(payload.records)
@@ -120,10 +127,12 @@ def predict(payload: PredictRequest):
 
         logger.info(
             f"predict_request_ok request_id={request_id} "
-            f"n_records={n_records} latency_ms={latency_ms} status=200"
+            f"n_records={n_records} latency_ms={latency_ms} status=200 "
+            f"model_version={MODEL_VERSION}"
         )
         
         return PredictResponse(
+            model_version= MODEL_VERSION,
             model_type=meta.get("model_type", "unknown"),
             threshold=threshold,
             predictions=preds,
@@ -133,7 +142,8 @@ def predict(payload: PredictRequest):
         
         logger.warning(
             f"predict_request_invalid request_id={request_id} "
-            f"n_records={n_records} latency_ms={latency_ms}" 
-            f"status={e.status_code}"
+            f"n_records={n_records} latency_ms={latency_ms} " 
+            f"status={e.status_code} "
+            f"model_version={MODEL_VERSION}"
         )
         raise e

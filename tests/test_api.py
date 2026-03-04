@@ -125,3 +125,11 @@ def test_meta_endpoint():
     assert "model_type" in data
     assert "threshold" in data
     assert "features_expected" in data
+    
+def test_meta_includes_model_version():
+    r = client.get("/meta")
+    assert r.status_code == 200
+    data = r.json()
+    assert "model_version" in data
+    assert isinstance(data["model_version"], str)
+    assert len(data["model_version"]) >= 8

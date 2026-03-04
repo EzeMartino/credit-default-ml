@@ -14,6 +14,7 @@ class Prediction(BaseModel):
 
 
 class PredictResponse(BaseModel):
+    model_version: str
     model_type: str
     threshold: float
     predictions: list[Prediction]
