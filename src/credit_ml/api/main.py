@@ -23,6 +23,7 @@ meta = get_metadata()
 PIPELINE_PATH, METADATA_PATH = get_artifact_paths()
 MODEL_VERSION = meta.get("model_version") or compute_model_version(PIPELINE_PATH, METADATA_PATH)
 MAX_RECORDS = 1000
+MAX_INFERENCE_TIME_MS = 2000
 
 EXCLUDE_PATHS = {"/health", "/meta", "/metrics", "/docs", "/redoc", "/openapi.json"}
 REQUEST_COUNT = 0
@@ -148,6 +149,17 @@ def predict(payload: PredictRequest):
             f"model_version={MODEL_VERSION}"
         )
 
+        if latency_ms > MAX_INFERENCE_TIME_MS:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "msg": "inference_timeout",
+                    "latency_ms": latency_ms,
+                    "request_id": request_id,
+                    "model_version": MODEL_VERSION
+                }
+            )
+        
         return PredictResponse(
             model_version= MODEL_VERSION,
             model_type=meta.get("model_type", "unknown"),
