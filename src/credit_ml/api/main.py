@@ -5,7 +5,7 @@ import time
 import uuid
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
@@ -24,7 +24,10 @@ PIPELINE_PATH, METADATA_PATH = get_artifact_paths()
 MODEL_VERSION = meta.get("model_version") or compute_model_version(PIPELINE_PATH, METADATA_PATH)
 MAX_RECORDS = 1000
 
-
+EXCLUDE_PATHS = {"/health", "/meta", "/metrics", "/docs", "/redoc", "/openapi.json"}
+REQUEST_COUNT = 0
+ERROR_COUNT = 0
+TOTAL_LATENCY = 0
 
 setup_logging()  # Configure logging at the start of the application
 logger = logging.getLogger("credit_ml.api")
@@ -53,6 +56,29 @@ async def lifespan(app: FastAPI):
     
 app = FastAPI(title="Credit Default ML API", version="0.1.0", lifespan=lifespan)
 
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
+    global REQUEST_COUNT, ERROR_COUNT, TOTAL_LATENCY
+    
+    # Ignorar preflight y endpoints auxiliares
+    if request.method == "OPTIONS" or request.url.path in EXCLUDE_PATHS:
+        return await call_next(request)
+
+    t0 = time.time()
+    REQUEST_COUNT += 1
+
+    try:
+        response = await call_next(request)
+        if response.status_code >= 400:
+            ERROR_COUNT += 1
+        return response
+    except Exception:
+        ERROR_COUNT += 1
+        raise
+    finally:
+        TOTAL_LATENCY += int((time.time() - t0) * 1000)
+
+
 @app.exception_handler(Exception)
 def unhandled_exception_handler(request, exc):
     logger.exception(
@@ -68,17 +94,6 @@ def unhandled_exception_handler(request, exc):
 @app.get("/health")
 def health():
     return {"status": "ok", "loaded_from": str(Path(__file__).resolve())}
-
-@app.get("/meta")
-def meta_info():
-    return {
-        "model_version": MODEL_VERSION,
-        "model_type": meta.get("model_type"),
-        "trained_at": meta.get("trained_at"),
-        "threshold": meta.get("threshold"),
-        "features_expected": meta.get("features_expected"),
-        "features_engineered": meta.get("features_engineered"),
-    }
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(payload: PredictRequest):
@@ -99,7 +114,7 @@ def predict(payload: PredictRequest):
             f"n_records={n_records} latency_ms={latency_ms} status=422 "
             f"model_version={MODEL_VERSION}"
         )
-          
+
         raise HTTPException(
             status_code=422,
             detail={
@@ -132,7 +147,7 @@ def predict(payload: PredictRequest):
             f"n_records={n_records} latency_ms={latency_ms} status=200 "
             f"model_version={MODEL_VERSION}"
         )
-        
+
         return PredictResponse(
             model_version= MODEL_VERSION,
             model_type=meta.get("model_type", "unknown"),
@@ -149,3 +164,30 @@ def predict(payload: PredictRequest):
             f"model_version={MODEL_VERSION}"
         )
         raise e
+    
+@app.get("/meta")
+def meta_info():
+    return {
+        "model_version": MODEL_VERSION,
+        "model_type": meta.get("model_type"),
+        "trained_at": meta.get("trained_at"),
+        "threshold": meta.get("threshold"),
+        "features_expected": meta.get("features_expected"),
+        "features_engineered": meta.get("features_engineered"),
+    }
+    
+@app.get("/metrics")
+def metrics():
+
+    avg_latency = (
+        TOTAL_LATENCY / REQUEST_COUNT
+        if REQUEST_COUNT > 0
+        else 0
+    )
+
+    return {
+        "requests_total": REQUEST_COUNT,
+        "errors_total": ERROR_COUNT,
+        "avg_latency_ms": avg_latency,
+        "model_version": MODEL_VERSION,
+    }
