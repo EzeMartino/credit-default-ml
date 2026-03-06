@@ -1,3 +1,4 @@
 -r requirements.inference.txt
 pytest
 httpx
+xlrd

@@ -4,7 +4,6 @@ __pycache__/
 .ipynb_checkpoints/
 models/*
 !models/.gitkeep
-data/raw/*
 !data/raw/.gitkeep
 node_modules/
 package.json
