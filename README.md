@@ -408,3 +408,89 @@ Runtime dependencies are separated from development dependencies:
 
 This reduces container size and avoids OS-specific packages such as pywinpty.
 
+
+## Quick API Test
+
+#### Using curl:
+curl -X POST "http://127.0.0.1:8010/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "records": [
+      {
+        "LIMIT_BAL": 20000,
+        "SEX": 2,
+        "EDUCATION": 2,
+        "MARRIAGE": 1,
+        "AGE": 24,
+        "PAY_0": 2,
+        "PAY_2": 2,
+        "PAY_3": -1,
+        "PAY_4": -1,
+        "PAY_5": -2,
+        "PAY_6": -2,
+        "BILL_AMT1": 3913,
+        "BILL_AMT2": 3102,
+        "BILL_AMT3": 689,
+        "BILL_AMT4": 0,
+        "BILL_AMT5": 0,
+        "BILL_AMT6": 0,
+        "PAY_AMT1": 0,
+        "PAY_AMT2": 689,
+        "PAY_AMT3": 0,
+        "PAY_AMT4": 0,
+        "PAY_AMT5": 0,
+        "PAY_AMT6": 0
+      }
+    ]
+  }'
+
+#### Using Python:
+import requests
+
+payload = {
+    "records": [
+        {
+            "LIMIT_BAL": 20000,
+            "SEX": 2,
+            "EDUCATION": 2,
+            "MARRIAGE": 1,
+            "AGE": 24,
+            "PAY_0": 2,
+            "PAY_2": 2,
+            "PAY_3": -1,
+            "PAY_4": -1,
+            "PAY_5": -2,
+            "PAY_6": -2,
+            "BILL_AMT1": 3913,
+            "BILL_AMT2": 3102,
+            "BILL_AMT3": 689,
+            "BILL_AMT4": 0,
+            "BILL_AMT5": 0,
+            "BILL_AMT6": 0,
+            "PAY_AMT1": 0,
+            "PAY_AMT2": 689,
+            "PAY_AMT3": 0,
+            "PAY_AMT4": 0,
+            "PAY_AMT5": 0,
+            "PAY_AMT6": 0
+        }
+    ]
+}
+
+response = requests.post("http://127.0.0.1:8010/predict", json=payload)
+print(response.status_code)
+print(response.json())
+
+#### Expected Response
+{
+  "request_id": "example-request-id",
+  "model_version": "cee7073b7535",
+  "model_type": "logreg",
+  "threshold": 0.23,
+  "predictions": [
+    {
+      "proba_default": 0.59,
+      "label": 1
+    }
+  ]
+}
