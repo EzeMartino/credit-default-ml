@@ -15,7 +15,7 @@ End-to-end Machine Learning project including:
 ## Architecture Overview
 
 Pipeline flow:
-
+```
 Raw Data
    ↓
 Feature Engineering
@@ -27,6 +27,7 @@ Artifact Export (pipeline.joblib + metadata.json)
 FastAPI Service
    ↓
 Batch Predictions
+```
 
 ![alt text](docs/Architecture%20Overview-mermaid.png)
 
