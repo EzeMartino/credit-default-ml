@@ -6,3 +6,6 @@ models/*
 !models/.gitkeep
 data/raw/*
 !data/raw/.gitkeep
+node_modules/
+package.json
+package-lock.json

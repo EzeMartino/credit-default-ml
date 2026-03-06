@@ -1,4 +1,3 @@
-# .dockerignore
 venv/
 .git/
 __pycache__/
@@ -18,3 +17,7 @@ tests/
 *.log
 .DS_Store
 .vscode/
+.gitignore
+node_modules/
+package.json
+package-lock.json

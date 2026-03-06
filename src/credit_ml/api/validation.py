@@ -2,15 +2,6 @@ from __future__ import annotations
 
 import pandas as pd
 from fastapi import HTTPException
-import logging
-import time
-import uuid
-
-from credit_ml.api.logging_conf import setup_logging
-from credit_ml.api.schemas import PredictRequest
-
-setup_logging()  # Configure logging at the start of the application
-logger = logging.getLogger("credit_ml.api")
 
 def validate_and_prepare_df(
     df: pd.DataFrame,

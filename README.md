@@ -11,7 +11,21 @@ End-to-end Machine Learning project including:
 
 ## Architecture Overview
 
-![alt text](image.png)
+Pipeline flow:
+
+Raw Data
+   ↓
+Feature Engineering
+   ↓
+Model Training (Logistic Regression)
+   ↓
+Artifact Export (pipeline.joblib + metadata.json)
+   ↓
+FastAPI Service
+   ↓
+Batch Predictions
+
+![alt text](docs/Architecture%20Overview-mermaid.png)
 
 
 ## System Components
@@ -119,9 +133,12 @@ This script validates:
 
 ## Training the Model
 
-To train the Logistic Regression model with log-transformed features:
+#### install
+pip install -e .
 
-python -m models.train\_logreg --input data/raw/credit\_default.xls
+#### To train the Logistic Regression model with log-transformed features:
+
+python -m credit_ml.modeling.train
 
 This will:
 
@@ -256,14 +273,20 @@ Features:
 - Structured request logging
 - Threshold-based classification
 
-### Run locally
+### Run API locally
 pip install -r requirements.inference.txt
 pip install -e .
 
-python -m uvicorn credit_ml.api.main:app --host 0.0.0.0 --port 8010
+python -m uvicorn credit_ml.api.main:app --reload --port 8010
 
 Open API docs:
 http://127.0.0.1:8010/docs
+
+Endpoints:
+- GET /health
+- GET /meta
+- GET /metrics
+- POST /predict
 
 
 ## Docker Deployment
@@ -332,6 +355,9 @@ Example response:
 
 ## API Validation Rules
 
+The API supports batch predictions with a maximum of 1000 records per request.
+This prevents resource exhaustion and improves API stability.
+
 Input validation is applied before model inference.
 
 Rules:
@@ -356,6 +382,17 @@ Example log:
 predict_request_ok request_id=... n_records=1 latency_ms=42 status=200
 
 Errors are logged with stack traces for debugging.
+
+
+## Monitoring
+
+GET /metrics
+
+Returns:
+- total_requests
+- error_requests
+- average_latency_ms
+- model_version
 
 
 ## Dockerized Architecture

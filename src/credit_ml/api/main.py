@@ -94,7 +94,11 @@ def unhandled_exception_handler(request, exc):
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "loaded_from": str(Path(__file__).resolve())}
+    return {
+        "status": "ok", 
+        "model_loaded": True, 
+        "model_version": MODEL_VERSION
+    }
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(payload: PredictRequest):
