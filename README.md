@@ -1,4 +1,7 @@
 # Credit Default ML
+![Tests](https://github.com/EzeMartino/credit-default-ml/actions/workflows/tests.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![Docker](https://img.shields.io/badge/docker-ready-blue)
 
 End-to-end Machine Learning project including:
 - Feature engineering
@@ -37,7 +40,7 @@ Batch Predictions
 - Threshold optimization
 - Calibration analysis
 
-### Model Articats
+### Model Artifacts
 - Serialized pipeline (pipeline.joblib)
 - Metadata with threshold and model info
 
@@ -112,7 +115,8 @@ credit-default-ml/
 Create virtual environment:
 python -m venv venv
 venv\\Scripts\\activate
-pip install -r requirements.txt
+pip install -r requirements.dev.txt
+pip install -e .
 
 
 ## Data Profiling Script
@@ -162,7 +166,7 @@ The Random Forest model demonstrates superior ranking performance, suggesting no
 > reports/model_comparison_v2.md
 
 
-## Baseline Comparison
+## Baseline Comparison (this section corresponds to previous scripts in transition)
 
 To run a baseline comparison between the Logistic Regression, Random Forest and a Dummy model
 
@@ -174,7 +178,7 @@ This script:
 * Computes ROC-AUC, PR-AUC and F1
 * Stores results in reports/baseline_results.json
 
-### Run threshold analysis
+### Run threshold analysis 
 python -m evaluations.threshold_analysis --output_dir reports/
 
 This script:
@@ -191,8 +195,7 @@ This script:
 - Under Recall ≥ 0.60 → RF reduces operational workload.
 - Under Precision ≥ 0.50 → trade-off depends on FN cost.
 
-
-## Executive Summary
+### Executive Summary
 
 - Logistic Regression provides strong baseline performance and interpretability.
 - Random Forest improves ranking quality and operational efficiency under recall constraints.
