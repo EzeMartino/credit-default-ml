@@ -14,7 +14,30 @@ class Prediction(BaseModel):
 
 
 class PredictResponse(BaseModel):
+    request_id: str
     model_version: str
     model_type: str
     threshold: float
     predictions: list[Prediction]
+    
+
+class HealthResponse(BaseModel):
+    status: str
+    model_loaded: bool
+    model_version: str
+
+
+class MetaResponse(BaseModel):
+    model_version: str
+    model_type: str
+    trained_at: str | None = None
+    threshold: float
+    features_expected: list[str]
+    features_engineered: list[str]
+
+
+class MetricsResponse(BaseModel):
+    requests_total: int
+    errors_total: int
+    avg_latency_ms: float
+    model_version: str

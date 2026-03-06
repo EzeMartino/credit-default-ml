@@ -36,8 +36,12 @@ def get_valid_payload():
     
 def test_health():
     response = client.get("/health")
+    data = response.json()
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    assert data["status"] == "ok"
+    assert "model_loaded" in data
+    assert "model_version" in data
+    assert data["model_loaded"] is True
     
 def test_predict_success():
     payload = get_valid_payload()
@@ -50,6 +54,9 @@ def test_predict_success():
     assert len(data["predictions"]) == 1
     assert "proba_default" in data["predictions"][0]
     assert "label" in data["predictions"][0]
+    assert "request_id" in data
+    assert isinstance(data["request_id"], str)
+    assert len(data["request_id"]) > 10
     
 def test_predict_missing_feature_returns_422():
     payload = get_valid_payload()
@@ -130,6 +137,17 @@ def test_meta_includes_model_version():
     r = client.get("/meta")
     assert r.status_code == 200
     data = r.json()
+    assert "model_version" in data
+    assert isinstance(data["model_version"], str)
+    assert len(data["model_version"]) >= 8
+    
+def test_metrics_endpoint():
+    r = client.get("/metrics")
+    assert r.status_code == 200
+    data = r.json()
+    assert "requests_total" in data
+    assert "avg_latency_ms" in data
+    assert "errors_total" in data
     assert "model_version" in data
     assert isinstance(data["model_version"], str)
     assert len(data["model_version"]) >= 8

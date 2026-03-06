@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
-from credit_ml.api.schemas import PredictRequest, PredictResponse, Prediction
+from credit_ml.api.schemas import HealthResponse, MetaResponse, MetricsResponse, PredictRequest, PredictResponse, Prediction
 from credit_ml.api.deps import get_pipeline, get_metadata
 from credit_ml.modeling.artifacts import get_artifact_paths
 from credit_ml.api.validation import validate_and_prepare_df
@@ -92,13 +92,13 @@ def unhandled_exception_handler(request, exc):
         content={"msg": "internal_server_error", "error_type": type(exc).__name__},
     )
 
-@app.get("/health")
+@app.get("/health", response_model=HealthResponse)
 def health():
-    return {
-        "status": "ok", 
-        "model_loaded": True, 
-        "model_version": MODEL_VERSION
-    }
+    return HealthResponse(
+        status="ok",
+        model_loaded=True,
+        model_version=MODEL_VERSION
+    )
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(payload: PredictRequest):
@@ -165,6 +165,7 @@ def predict(payload: PredictRequest):
             )
         
         return PredictResponse(
+            request_id=request_id,
             model_version= MODEL_VERSION,
             model_type=meta.get("model_type", "unknown"),
             threshold=threshold,
@@ -181,29 +182,28 @@ def predict(payload: PredictRequest):
         )
         raise e
     
-@app.get("/meta")
+@app.get("/meta", response_model=MetaResponse)
 def meta_info():
-    return {
-        "model_version": MODEL_VERSION,
-        "model_type": meta.get("model_type"),
-        "trained_at": meta.get("trained_at"),
-        "threshold": meta.get("threshold"),
-        "features_expected": meta.get("features_expected"),
-        "features_engineered": meta.get("features_engineered"),
-    }
-    
-@app.get("/metrics")
-def metrics():
+    return MetaResponse(
+        model_version=MODEL_VERSION,
+        model_type=meta.get("model_type"),
+        trained_at=meta.get("trained_at"),
+        threshold=float(meta.get("threshold", DEFAULT_THRESHOLD)),
+        features_expected=meta.get("features_expected", []),
+        features_engineered=meta.get("features_engineered", []),
+    )
 
+@app.get("/metrics", response_model=MetricsResponse)
+def metrics():
     avg_latency = (
         TOTAL_LATENCY / REQUEST_COUNT
         if REQUEST_COUNT > 0
         else 0
     )
 
-    return {
-        "requests_total": REQUEST_COUNT,
-        "errors_total": ERROR_COUNT,
-        "avg_latency_ms": avg_latency,
-        "model_version": MODEL_VERSION,
-    }
+    return MetricsResponse(
+        requests_total=REQUEST_COUNT,
+        errors_total=ERROR_COUNT,
+        avg_latency_ms=avg_latency,
+        model_version=MODEL_VERSION,
+    )
