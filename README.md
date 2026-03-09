@@ -12,26 +12,6 @@ End-to-end Machine Learning project including:
 - Dockerized deployment
 
 
-## Architecture Overview
-
-Pipeline flow:
-```
-Raw Data
-   ↓
-Feature Engineering
-   ↓
-Model Training (Logistic Regression)
-   ↓
-Artifact Export (pipeline.joblib + metadata.json)
-   ↓
-FastAPI Service
-   ↓
-Batch Predictions
-```
-
-![alt text](docs/Architecture%20Overview-mermaid.png)
-
-
 ## System Components
 
 ### Training Layer
@@ -84,13 +64,56 @@ Target rate:
 * Majority class baseline accuracy: 0.7788
 
 
+## Architecture Overview
+
+Pipeline flow:
+```
+Raw Data
+   ↓
+Feature Engineering
+   ↓
+Model Training (Logistic Regression)
+   ↓
+Artifact Export (pipeline.joblib + metadata.json)
+   ↓
+FastAPI Service
+   ↓
+Batch Predictions
+```
+
+![alt text](docs/Architecture%20Overview-mermaid.png)
+
+
+## Project Structure
+
+```
+credit-default-ml/
+├── data/
+│   └── raw/
+├── docs/
+├── notebooks/
+├── reports/
+├── src/
+│   └── credit_ml/
+│       ├── api/
+│       ├── training/
+│       ├── modeling/
+│       └── ...
+├── tests/
+├── Dockerfile
+├── pyproject.toml
+├── requirements.dev.txt
+└── requirements.inference.txt
+```
+
+
 ## Evaluation Philosophy
 
 Primary (ranking) metric:
 - ROC-AUC
 
 Operational constraint:
-- Threshold-based policy
+- Threshold-based policy 
 - Either Recall ≥ X
 - Or Precision ≥ X
 
@@ -99,46 +122,30 @@ Performance is never discussed without:
 - Operational metric under explicit threshold
 
 
-## Project Structure
-
-```
-credit-default-ml/
-├── data/
-├── notebooks/
-├── reports/
-├── src/
-├── tests/
-```
-
-
 ## Setup
 
-Create virtual environment:
 python -m venv venv
-venv\\Scripts\\activate
+venv\Scripts\activate
 pip install -r requirements.dev.txt
 pip install -e .
 
 
-## Data Profiling Script
+## Quick Start
 
-Generate automated dataset report:
-python src/data/load\_and\_profile.py
---input data/raw/credit\_default.xls
---out reports/profile\_summary.json
+python -m credit_ml.training.train
+uvicorn src.credit_ml.api.main:app --reload --port 8010
+Swagger docs: `http://127.0.0.1:8010/docs`
 
-This script validates:
+Optional developer shortcuts using Makefile:
 
-* column structure
-* target distribution
-* baseline trivial model
-* skewness statistics
-* PAY\_X unique values
-
+make setup
+make train
+make serve
+make test
 
 ## Training the Model
 
-#### install
+#### Install
 pip install -e .
 
 #### To train the Logistic Regression model with log-transformed features:
@@ -154,114 +161,49 @@ This will:
 * Report holdout ROC-AUC
 
 
-## Model Comparison Summary
+## Model Summary
 
-|Model|CV ROC-AUC|CV std|Precision@20%|Recall@20%|
-|-|-|-|-|-|
-|Logistic (log-transformed)|0.747|0.005|0.55|0.497|
-|Random Forest|0.780|0.005|0.565|0.511|
+Random Forest achieved stronger ranking performance, while Logistic Regression offered better interpretability and lower deployment complexity.
 
-The Random Forest model demonstrates superior ranking performance, suggesting non-linear structure in the problem. However, the Logistic model remains more interpretable and production-ready at this stage.
+The deployed API currently uses Logistic Regression.
 
-> For operational constraint-based analysis, see:
-> reports/model_comparison_v2.md
+**Current production threshold:** `0.22999999999999932`  
+Selected through threshold analysis to satisfy the chosen operational precision/recall constraint on validation data.
 
-
-## Baseline Comparison (this section corresponds to previous scripts in transition)
-
-To run a baseline comparison between the Logistic Regression, Random Forest and a Dummy model
-
-python -m models.train\_baseline --output_dir reports/
-
-This script:
-* Runs 5-fold stratified CV
-* Evaluates Dummy, Logistic and Random Forest
-* Computes ROC-AUC, PR-AUC and F1
-* Stores results in reports/baseline_results.json
-
-### Run threshold analysis 
-python -m evaluations.threshold_analysis --output_dir reports/
-
-This script:
-* Generates out-of-fold probabilities
-* Searches thresholds under operational constraints:
-    * Maximize precision subject to Recall ≥ target
-    * Maximize recall subject to Precision ≥ target
-* Reports precision, recall, flagged_rate and confusion matrix
-* Saves results to reports/threshold_analysis.json
-
-### Key Findings
-- Logistic ROC-AUC: ~0.747
-- Random Forest ROC-AUC: ~0.779
-- Under Recall ≥ 0.60 → RF reduces operational workload.
-- Under Precision ≥ 0.50 → trade-off depends on FN cost.
-
-### Executive Summary
-
-- Logistic Regression provides strong baseline performance and interpretability.
-- Random Forest improves ranking quality and operational efficiency under recall constraints.
-- Final model choice depends on regulatory interpretability requirements vs operational cost priorities.
+See `docs/model-selection.md` for the full comparison.
 
 
-## Feature Engineering Improvements
+### Feature Engineering
 
-An explicit interaction feature was introduced:
+The project includes engineered features such as `credit_utilization` and an interaction term `utilization_x_pay0`.
 
-utilization_x_pay0 = credit_utilization × PAY_0
+These additions improved Logistic Regression performance and reduced operational workload under selected threshold constraints.
 
-This interaction models financial stress under delayed payment conditions.
-
-Impact on Logistic Regression:
-
-- ROC-AUC: 0.747 → 0.756
-- PR-AUC: 0.507 → 0.516
-- Reduced flagged_rate under Recall ≥ 0.60
-- Increased recall under Precision ≥ 0.50
-
-This demonstrates the importance of explicit interaction terms for linear models.
+See `docs/model-evaluation.md` for detailed results.
 
 
-## Calibration Analysis
+### Calibration Analysis
 
-python -m evaluations.calibration_analysis --output_dir reports/
+Calibration was evaluated to ensure probability stability under threshold-based decision rules.
 
 Brier Score:
-- Logistic: 0.1425
+- Logistic Regression: 0.1425
 - Random Forest: 0.1346
 
-Random Forest showed slightly better probability calibration, especially in high-risk regions.
+Random Forest showed slightly better calibration, but the difference was not enough to outweigh Logistic Regression’s interpretability and deployment simplicity.
 
-Calibration matters because threshold-based operational policies rely on probability stability.
+See `docs/model-evaluation.md` for full details.
 
 
-## Reproducibility
+### Reproducibility
 
 From a clean environment:
 
 1. Install dependencies
-2. Run data profiling
-3. Run baseline comparison
-4. Run threshold analysis
-5. Run Calibration analysis
-6. Review reports/ folder
-
-
-## Testing
-
-The project includes a minimal pytest suite to ensure pipeline integrity.
-
-Run tests with:
-
-pytest -q
-
-The test suite validates:
-
-- Data loading and target consistency
-- Logistic pipeline training on a small subset
-- Stratified cross-validation preserves class distribution
-- Threshold analysis output schema
-
-Tests are designed to be lightweight (< 15 seconds) and prevent silent pipeline regressions. All tests must pass before pushing new experimental changes.
+2. Train the model
+3. Run tests
+4. Start the API
+5. Send a batch prediction request
 
 
 ## API Inference Service
@@ -275,13 +217,14 @@ Features:
 - Strict input validation
 - Explicit error handling (422 vs 500)
 - Structured request logging
-- Threshold-based classification
+- Threshold-based classification using the threshold stored in model metadata
 
 ### Run API locally
-pip install -r requirements.inference.txt
+pip install -r requirements.dev.txt
 pip install -e .
-
-python -m uvicorn credit_ml.api.main:app --reload --port 8010
+python -m credit_ml.modeling.train
+pytest -q
+uvicorn src.credit_ml.api.main:app --reload
 
 Open API docs:
 http://127.0.0.1:8010/docs
@@ -293,127 +236,10 @@ Endpoints:
 - POST /predict
 
 
-## Docker Deployment
-
-The API can be executed inside a Docker container.
-
-This ensures the service runs with identical dependencies across environments.
-
-
-### Build image
-docker build -t credit-ml-api:latest .
-
-
-### Run container
-docker run --rm -p 8010:8010 credit-ml-api:latest
-
-
-## Example Prediction Request
-
-Endpoint:
-POST /predict
-
-Example payload:
-{
-  "records": [
-    {
-      "LIMIT_BAL": 20000,
-      "SEX": 2,
-      "EDUCATION": 2,
-      "MARRIAGE": 1,
-      "AGE": 24,
-      "PAY_0": 2,
-      "PAY_2": 2,
-      "PAY_3": -1,
-      "PAY_4": -1,
-      "PAY_5": -2,
-      "PAY_6": -2,
-      "BILL_AMT1": 3913,
-      "BILL_AMT2": 3102,
-      "BILL_AMT3": 689,
-      "BILL_AMT4": 0,
-      "BILL_AMT5": 0,
-      "BILL_AMT6": 0,
-      "PAY_AMT1": 0,
-      "PAY_AMT2": 689,
-      "PAY_AMT3": 0,
-      "PAY_AMT4": 0,
-      "PAY_AMT5": 0,
-      "PAY_AMT6": 0
-    }
-  ]
-}
-
-Example response:
-{
-  "model_type": "logreg",
-  "threshold": 0.23,
-  "predictions": [
-    {
-      "proba_default": 0.59,
-      "label": 1
-    }
-  ]
-}
-
-
-## API Validation Rules
-
-The API supports batch predictions with a maximum of 1000 records per request.
-This prevents resource exhaustion and improves API stability.
-
-Input validation is applied before model inference.
-
-Rules:
-- Missing required features → 422 error
-- Missing values inside records → 422 error
-- Extra columns → ignored
-- Batch requests must have valid data in all records
-This prevents silent inference failures and enforces a strict API contract.
-
-
-## Logging
-
-The API implements structures request logging.
-
-Each requests logs:
-- request_id
-- number of records
-- latency
-- HTTP status code
-
-Example log:
-predict_request_ok request_id=... n_records=1 latency_ms=42 status=200
-
-Errors are logged with stack traces for debugging.
-
-
-## Monitoring
-
-GET /metrics
-
-Returns:
-- total_requests
-- error_requests
-- average_latency_ms
-- model_version
-
-
-## Dockerized Architecture
-
-The service includes a minimal runtime dependency set.
-
-Runtime dependencies are separated from development dependencies:
-- requirements.inference.txt → runtime environment
-- requirements.dev.txt → development tools (pytest, notebooks, etc.)
-
-This reduces container size and avoids OS-specific packages such as pywinpty.
-
-
-## Quick API Test
+### Quick API Test
 
 #### Using curl:
-curl -X POST "http://127.0.0.1:8010/predict" \
+```curl -X POST "http://127.0.0.1:8010/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "records": [
@@ -444,9 +270,10 @@ curl -X POST "http://127.0.0.1:8010/predict" \
       }
     ]
   }'
+```
 
 #### Using Python:
-import requests
+```import requests
 
 payload = {
     "records": [
@@ -481,6 +308,7 @@ payload = {
 response = requests.post("http://127.0.0.1:8010/predict", json=payload)
 print(response.status_code)
 print(response.json())
+```
 
 #### Expected Response
 {
@@ -495,3 +323,134 @@ print(response.json())
     }
   ]
 }
+
+
+## API Validation Rules
+
+The API supports batch predictions with a maximum of 1000 records per request.
+This prevents resource exhaustion and improves API stability.
+
+Input validation is applied before model inference.
+
+Rules:
+- Missing required features → 422 error
+- Missing values inside records → 422 error
+- Extra columns → ignored
+- Batch requests must have valid data in all records
+This prevents silent inference failures and enforces a strict API contract.
+
+
+### Logging
+
+The API implements structured request logging.
+
+Each request logs:
+- request_id
+- number of records
+- latency
+- HTTP status code
+
+Example log:
+predict_request_ok request_id=... n_records=1 latency_ms=42 status=200
+
+Errors are logged with stack traces for debugging.
+
+
+### Monitoring
+
+GET /metrics
+
+Returns:
+- total_requests
+- error_requests
+- average_latency_ms
+- model_version
+
+
+## Docker Deployment
+
+The API can be executed inside a Docker container.
+
+This ensures the service runs with identical dependencies across environments.
+
+
+### Build image
+docker build -t credit-ml-api:latest .
+
+
+### Run container
+docker run --rm -p 8010:8010 credit-ml-api:latest
+
+
+### Dockerized Architecture
+
+The service includes a minimal runtime dependency set.
+
+Runtime dependencies are separated from development dependencies:
+- requirements.inference.txt → runtime environment
+- requirements.dev.txt → development tools (pytest, notebooks, etc.)
+
+This reduces container size and avoids OS-specific packages such as pywinpty.
+
+
+## Testing
+
+The project includes a pytest suite covering training, metadata, API behavior and validation rules.
+
+Run tests with:
+
+pytest -q
+
+The test suite validates:
+
+- Data loading and target consistency
+- Logistic pipeline training on a small subset
+- Stratified cross-validation preserves class distribution
+- Threshold analysis output schema
+
+Tests are designed to be lightweight (< 15 seconds) and prevent silent pipeline regressions. All tests must pass before pushing new experimental changes.
+
+
+## Continuous Integration
+
+The repository includes a GitHub Actions pipeline that:
+
+1. Installs dependencies
+2. Trains the model
+3. Runs the full test suite
+
+This ensures that model artifacts and the API remain reproducible and stable.
+
+
+## Documentation & Utilities
+
+Generate automated dataset report:
+python src/data/load\_and\_profile.py
+--input data/raw/credit\_default.xls
+--out reports/profile\_summary.json
+
+This script validates:
+* column structure
+* target distribution
+* baseline trivial model
+* skewness statistics
+* PAY\_X unique values
+
+Additional technical details are available in:
+- `docs/decision-log.md`
+- `docs/model-selection.md`
+
+
+## Limitations
+
+- The deployed model prioritizes interpretability over maximum ranking performance.
+- Threshold selection depends on operational assumptions and may need recalibration under new data distributions.
+- The current API is inference-only and does not include automated retraining.
+
+
+## Next Steps
+
+- Add model drift monitoring
+- Introduce retraining workflow orchestration
+- Expand evaluation reports for calibration and threshold sensitivity
+- Compare deployed Logistic Regression against a more production-constrained Random Forest serving setup
