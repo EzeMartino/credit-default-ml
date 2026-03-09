@@ -90,7 +90,8 @@ def build_model(X, model):
             ("classifier", rf)
         ])
         return rf_model
-    else: return(ValueError)
+    else: 
+        return(ValueError)
     
     
 

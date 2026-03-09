@@ -7,7 +7,7 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     
     # Prevent 0 division and blank cells from excel 
-    if "BILL_AMT" in df.columns and "LIMIT_BAL" in df.columns:
+    if "BILL_AMT1" in df.columns and "LIMIT_BAL" in df.columns:
         denom = df["LIMIT_BAL"].replace(0, np.nan)
         df["credit_utilization"] = (df["BILL_AMT1"]/ denom).fillna(0.0)
     else:

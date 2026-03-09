@@ -1,10 +1,23 @@
+# environments
 venv/
+.env
+
+# python
 __pycache__/
 *.pyc
+*.pyo
+
+# notebooks
 .ipynb_checkpoints/
+
+# artifacts
 models/*
 !models/.gitkeep
+
+# data placeholders
 !data/raw/.gitkeep
+
+# node
 node_modules/
 package.json
 package-lock.json

@@ -12,7 +12,7 @@ import argparse
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd

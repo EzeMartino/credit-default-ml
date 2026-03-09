@@ -1,5 +1,4 @@
 from __future__ import annotations
-from pathlib import Path
 import logging
 import time
 import uuid
@@ -141,8 +140,8 @@ def predict(payload: PredictRequest):
         threshold = float(meta.get("threshold", DEFAULT_THRESHOLD))
         labels = (proba >= threshold).astype(int)
         
-        preds = [Prediction(proba_default=float(p), label=int(l)) 
-                for p, l in zip(proba, labels)
+        preds = [Prediction(proba_default=float(proba), label=int(lab)) 
+                for proba, lab in zip(proba, labels)
                 ]
         
         latency_ms = int((time.time() - t0) * 1000)

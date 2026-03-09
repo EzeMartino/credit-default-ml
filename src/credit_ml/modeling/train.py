@@ -2,13 +2,11 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, brier_score_loss
 
 from credit_ml.config import MODEL_DIR, DEFAULT_THRESHOLD
-from credit_ml.features.build import TARGET_COL, add_features
-from credit_ml.modeling.artifacts import get_artifact_paths
+from credit_ml.features.build import TARGET_COL
 from credit_ml.modeling.pipeline import build_pipeline
 from credit_ml.data.io import load_raw_credit_xls
 from credit_ml.api.versioning import compute_model_version

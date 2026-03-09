@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 import joblib
 
 from credit_ml.config import MODEL_DIR, PIPELINE_FILENAME, METADATA_FILENAME
