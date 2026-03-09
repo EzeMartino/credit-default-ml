@@ -184,12 +184,18 @@ def predict(payload: PredictRequest):
 @app.get("/meta", response_model=MetaResponse)
 def meta_info():
     return MetaResponse(
-        model_version=MODEL_VERSION,
         model_type=meta.get("model_type"),
-        trained_at=meta.get("trained_at"),
-        threshold=float(meta.get("threshold", DEFAULT_THRESHOLD)),
-        features_expected=meta.get("features_expected", []),
-        features_engineered=meta.get("features_engineered", []),
+        model_version=MODEL_VERSION,
+        training_timestamp_utc=meta.get("training_timestamp_utc"),
+        dataset_name=meta.get("dataset_name"),
+        target_name=meta.get("target_name"),
+        threshold=meta.get("threshold"),
+        feature_count=meta.get("feature_count"),
+        training_rows=meta.get("training_rows"),
+        positive_class_rate=meta.get("positive_class_rate"),
+        input_features=meta.get("input_features", []),
+        engineered_features=meta.get("engineered_features", []),
+        validation_metrics=meta.get("validation_metrics", {}),
     )
 
 @app.get("/metrics", response_model=MetricsResponse)

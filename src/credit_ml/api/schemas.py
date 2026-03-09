@@ -28,12 +28,18 @@ class HealthResponse(BaseModel):
 
 
 class MetaResponse(BaseModel):
-    model_version: str
     model_type: str
-    trained_at: str | None = None
+    model_version: str
+    dataset_name: str
+    training_timestamp_utc: str 
+    target_name: str
     threshold: float
-    features_expected: list[str]
-    features_engineered: list[str]
+    feature_count: int | None = None
+    training_rows: int | None = None
+    positive_class_rate: float | None = None
+    input_features: list[str]
+    engineered_features: list[str]
+    validation_metrics: dict[str, float] | None = None
 
 
 class MetricsResponse(BaseModel):

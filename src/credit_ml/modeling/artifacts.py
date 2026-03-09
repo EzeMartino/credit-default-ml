@@ -34,7 +34,7 @@ def load_metadata():
     with open(metadata_path, "r") as f:
         metadata = json.load(f)
 
-    required_keys = ["model_type", "trained_at"]
+    required_keys = ["model_type", "training_timestamp_utc"]
     for key in required_keys:
         if key not in metadata:
             raise ValueError(f"Metadata missing required key: {key}")

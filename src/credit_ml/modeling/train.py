@@ -3,8 +3,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_auc_score, brier_score_loss
+from sklearn.metrics import average_precision_score, roc_auc_score, brier_score_loss
 
+from credit_ml.api.main import MODEL_VERSION
 from credit_ml.config import MODEL_DIR, DEFAULT_THRESHOLD
 from credit_ml.features.build import TARGET_COL
 from credit_ml.modeling.pipeline import build_pipeline
@@ -44,7 +45,9 @@ def train_and_export() -> None:
     # Fast metrics for metadata (it isn't a "serious" evaluation, it's sanity)
     proba = pipeline.predict_proba(X_val)[:, 1]
     roc_auc = roc_auc_score(y_val, proba)
+    pr_auc = average_precision_score(y_val, proba)
     brier = brier_score_loss(y_val, proba)
+    positive_rate = y_train.mean()
     
     MODEL_DIR.mkdir(exist_ok=True)
     
@@ -55,15 +58,32 @@ def train_and_export() -> None:
     
     metadata = {
         "model_type": "logreg",
-        "trained_at": datetime.now(timezone.utc).isoformat(),
+        "model_version": MODEL_VERSION,
+        
+        "training_timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        
+        "dataset_name": "taiwan_credit_default",
+        
+        "target_name": str(TARGET_COL),
+        
         "threshold": float(DEFAULT_THRESHOLD),
-        "data_source": str(RAW_PATH),
-        "target_col_used": str(TARGET_COL),
-        "features_expected": list(X.columns),  # columnas CRUDAS que espera la API
-        "features_engineered": ["credit_utilization", "util_x_pay0"],
-        "quick_metrics": {
-            "roc_auc_val": float(roc_auc),
-            "brier_val": float(brier),
+        
+        "feature_count": X.shape[1],
+        "training_rows": X_train.shape[0],
+        
+        "positive_class_rate": float(positive_rate),
+        
+        "input_features": list(X.columns),  # Crude columns expected from the API
+        
+        "engineered_features": [
+            "credit_utilization", 
+            "util_x_pay0"
+        ],
+        
+        "validation_metrics": {
+            "roc_auc": float(roc_auc),
+            "pr_auc": float(pr_auc),
+            "brier_score": float(brier),
         },
     }
     

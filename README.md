@@ -167,11 +167,12 @@ Random Forest achieved stronger ranking performance, while Logistic Regression o
 
 The deployed API currently uses Logistic Regression.
 
-**Current production threshold:** `0.22999999999999932`  
+**Current production threshold:** `0.23`  
 Selected through threshold analysis to satisfy the chosen operational precision/recall constraint on validation data.
 
 See `docs/model-selection.md` for the full comparison.
 
+See `docs/model-card.md` for detailed model documentation.
 
 ### Feature Engineering
 
