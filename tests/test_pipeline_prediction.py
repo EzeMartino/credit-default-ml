@@ -2,8 +2,10 @@ import joblib
 import pandas as pd
 from pathlib import Path
 
+from credit_ml.config import LATEST_FILE
+
 def test_pipeline_predicts():
-    model = joblib.load(Path("models/pipeline.joblib"))
+    model = joblib.load(Path(f"models/{LATEST_FILE.read_text(encoding="utf-8").strip()}/pipeline.joblib"))
     
     sample = pd.DataFrame([{
         "LIMIT_BAL": 20000,

@@ -1,9 +1,10 @@
-from curses import meta
 import json
 from pathlib import Path
 
+from credit_ml.config import LATEST_FILE
+
 def test_metadata_integrity():
-    path = Path("models/metadata.json")
+    path = Path(f"models/{LATEST_FILE.read_text(encoding="utf-8").strip()}/metadata.json")
     
     meta = json.load(path.open())
     
