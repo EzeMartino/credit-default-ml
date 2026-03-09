@@ -1,11 +1,15 @@
 import json
 import joblib
 
-from credit_ml.config import MODEL_DIR, PIPELINE_FILENAME, METADATA_FILENAME
+from credit_ml.config import MODEL_DIR, PIPELINE_FILENAME, METADATA_FILENAME, LATEST_FILE
 
 def get_artifact_paths():
-    pipeline_path = MODEL_DIR / PIPELINE_FILENAME
-    metadata_path = MODEL_DIR / METADATA_FILENAME
+    active_model_name = LATEST_FILE.read_text(encoding="utf-8").strip()
+    active_model_dir = MODEL_DIR / active_model_name
+    
+    pipeline_path = active_model_dir / PIPELINE_FILENAME
+    metadata_path = active_model_dir / METADATA_FILENAME
+    
     return pipeline_path, metadata_path
     
     

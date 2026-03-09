@@ -37,7 +37,7 @@ logger = logging.getLogger("credit_ml.api")
 async def lifespan(app: FastAPI):
     # ---- startup ----
     try:
-        expected = meta.get("features_expected", [])
+        expected = meta.get("input_features", [])
 
         if expected:
             dummy = {c: 0 for c in expected}
@@ -132,7 +132,7 @@ def predict(payload: PredictRequest):
     
     try:
         df = pd.DataFrame(payload.records)
-        expected = meta.get("features_expected", [])
+        expected = meta.get("input_features", [])
 
         df = validate_and_prepare_df(df=df, expected=expected, request_id=request_id)
         proba = pipe.predict_proba(df)[:, 1]

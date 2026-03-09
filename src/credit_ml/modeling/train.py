@@ -5,7 +5,6 @@ from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import average_precision_score, roc_auc_score, brier_score_loss
 
-from credit_ml.api.main import MODEL_VERSION
 from credit_ml.config import MODEL_DIR, DEFAULT_THRESHOLD
 from credit_ml.features.build import TARGET_COL
 from credit_ml.modeling.pipeline import build_pipeline
@@ -13,7 +12,6 @@ from credit_ml.data.io import load_raw_credit_xls
 from credit_ml.api.versioning import compute_model_version
 
 RAW_PATH = Path("data/raw/credit_default.xls")
-
 
 def train_and_export() -> None:
     if not RAW_PATH.exists():
@@ -49,16 +47,18 @@ def train_and_export() -> None:
     brier = brier_score_loss(y_val, proba)
     positive_rate = y_train.mean()
     
-    MODEL_DIR.mkdir(exist_ok=True)
+    
+    staging_dir = MODEL_DIR / "_staging"
+    staging_dir.mkdir(exist_ok=True)
     
     # Save pipeline
     import joblib
-    pipeline_path = MODEL_DIR / "pipeline.joblib"
+    pipeline_path = staging_dir / "pipeline.joblib"
     joblib.dump(pipeline, pipeline_path)
     
     metadata = {
         "model_type": "logreg",
-        "model_version": MODEL_VERSION,
+        "model_version": None,  # Placeholder, will be updated after computing the version
         
         "training_timestamp_utc": datetime.now(timezone.utc).isoformat(),
         
@@ -87,7 +87,7 @@ def train_and_export() -> None:
         },
     }
     
-    metadata_path = MODEL_DIR / "metadata.json"
+    metadata_path = staging_dir / "metadata.json"
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2)
 
@@ -98,8 +98,20 @@ def train_and_export() -> None:
     model_version = compute_model_version(pipeline_path, metadata_path)
     metadata["model_version"] = model_version
 
-    with open(metadata_path, "w") as f:
+
+    with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2)
+        
+    final_model_dir = MODEL_DIR / f"model_{model_version}"
+    
+    if final_model_dir.exists():
+        raise FileExistsError(f"Model directory already exists: {final_model_dir}")
+
+    staging_dir.rename(final_model_dir)
+    
+    (MODEL_DIR / "latest.txt").write_text(final_model_dir.name, encoding="utf-8")
+
+
 
 
 if __name__ == "__main__":
