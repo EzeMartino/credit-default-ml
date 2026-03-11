@@ -449,6 +449,23 @@ Additional technical details are available in:
 - The current API is inference-only and does not include automated retraining.
 
 
+## Neural Network Experiment
+
+A small MLP model was implemented using PyTorch to explore non-linear modeling.
+
+Architecture:
+Input → 64 → 32 → 1
+
+Improvements tested:
+- Batch Normalization
+- Dropout
+- BCEWithLogitsLoss
+
+Final validation ROC-AUC: ~0.77
+
+Despite modeling non-linear interactions, tree-based models still outperform neural networks on this tabular dataset.
+
+
 ## Next Steps
 
 - Add model drift monitoring
