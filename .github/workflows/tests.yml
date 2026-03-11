@@ -27,5 +27,8 @@ jobs:
       - name: Train model artifacts
         run: python -m credit_ml.modeling.train
 
+      - name: Train model artifacts with torch
+        run: python -m credit_ml.torch.train
+
       - name: Run tests
         run: pytest -q
