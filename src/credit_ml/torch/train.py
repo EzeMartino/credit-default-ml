@@ -53,7 +53,7 @@ def train_torch_model(
     
     model = CreditMLP(input_dim=X.shape[1])
     
-    criterion = nn.BCELoss()
+    criterion = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     
     for epoch in range(1, epochs + 1):
@@ -61,8 +61,8 @@ def train_torch_model(
         train_loss = 0.0
         
         for X_batch, y_batch in train_loader:
-            predictions = model(X_batch)
-            loss = criterion(predictions, y_batch)
+            logits = model(X_batch)
+            loss = criterion(logits, y_batch)
             
             optimizer.zero_grad()
             loss.backward()
