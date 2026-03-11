@@ -1,3 +1,6 @@
+import json
+
+import joblib
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -13,6 +16,8 @@ from credit_ml.torch.model import CreditMLP
 
 RAW_PATH = Path("data/raw/credit_default.xls")
 MODEL_OUT = Path("models/torch_model.pt")
+SCALER_OUT = Path("models/torch_scaler.joblib")
+METADATA_OUT = Path("models/torch_metadata.json")
 
 def train_torch_model(
     epochs: int = 10,
@@ -90,9 +95,26 @@ def train_torch_model(
               f"Validation ROC AUC: {val_roc_auc:.4f}"
             )
     
+    
+    
     MODEL_OUT.parent.mkdir(parents=True, exist_ok=True)
     torch.save(model.state_dict(), MODEL_OUT)
-    # Also save the scaler for future use in models/torch_scaler.joblib
+    
+    # Also save the scaler and metadata for reproducibility and inference
+    SCALER_OUT.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(scaler, SCALER_OUT)
+    
+    metadata = {
+        "model_type": "torch_mlp",
+        "input_dim": X.shape[1],
+        "training_timestamp_utc": pd.Timestamp.utcnow().isoformat(),
+        "validation_roc_auc": float(val_roc_auc),
+        "scaler_path": "models/torch_scaler.joblib",
+        "weights_path": "models/torch_model.pt",
+    }
+    
+    with open(METADATA_OUT, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2)
     
     print(f"[OK] Torch model saved to {MODEL_OUT.resolve()}")
     
