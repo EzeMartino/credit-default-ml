@@ -207,6 +207,46 @@ From a clean environment:
 5. Send a batch prediction request
 
 
+## Neural Network Experiment
+
+A small MLP model was implemented using PyTorch to explore non-linear modeling.
+
+### Architecture
+- Input dimension: 23
+- Hidden layers: 64 → 32
+- ReLU activations
+- BatchNorm
+- Dropout
+- Final output: 1 logit
+
+### Training setup
+- Optimizer: Adam
+- Loss: BCEWithLogitsLoss
+- Epochs: 10
+- Batch size: 128
+- StandardScaler applied before training
+
+### Artifacts
+The PyTorch experiment exports:
+- `models/torch_model.pt`
+- `models/torch_scaler.joblib`
+- `models/torch_metadata.json`
+- `models/torch_checkpoint.pt`
+
+### Result
+The final validation ROC-AUC reached approximately **0.77**.
+
+### Interpretation
+The neural network slightly improved over Logistic Regression by modeling non-linear interactions, but tree-based models still performed better on this tabular dataset.
+
+This experiment was useful to practice:
+- TensorDataset / DataLoader
+- custom training loops
+- validation tracking
+- checkpointing
+- artifact loading for inference
+
+
 ## API Inference Service
 
 The project includes a production-style inference API built with FastAPI.
@@ -326,7 +366,7 @@ print(response.json())
 }
 
 
-## API Validation Rules
+### API Validation Rules
 
 The API supports batch predictions with a maximum of 1000 records per request.
 This prevents resource exhaustion and improves API stability.
@@ -447,23 +487,6 @@ Additional technical details are available in:
 - The deployed model prioritizes interpretability over maximum ranking performance.
 - Threshold selection depends on operational assumptions and may need recalibration under new data distributions.
 - The current API is inference-only and does not include automated retraining.
-
-
-## Neural Network Experiment
-
-A small MLP model was implemented using PyTorch to explore non-linear modeling.
-
-Architecture:
-Input → 64 → 32 → 1
-
-Improvements tested:
-- Batch Normalization
-- Dropout
-- BCEWithLogitsLoss
-
-Final validation ROC-AUC: ~0.77
-
-Despite modeling non-linear interactions, tree-based models still outperform neural networks on this tabular dataset.
 
 
 ## Next Steps
