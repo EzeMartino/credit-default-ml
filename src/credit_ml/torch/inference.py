@@ -7,6 +7,7 @@ import pandas as pd
 from credit_ml.torch.model import CreditMLP
 
 METADATA_PATH = Path("models/torch_metadata.json")
+CHECKPOINT_PATH = Path("models/torch_checkpoint.pt")
 
 def predict_torch(model, scaler, X: pd.DataFrame):
     X_scaled = scaler.transform(X)
@@ -31,3 +32,14 @@ def load_torch_artifacts():
     model.eval()
     
     return model, scaler, meta
+
+def load_torch_checkpoint():
+    checkpoint = torch.load(CHECKPOINT_PATH, map_location="cpu")
+    
+    model = CreditMLP(input_dim=checkpoint["input_dim"])
+    
+    model.load_state_dict(checkpoint["model_state_dict"])
+    
+    model.eval()
+    
+    return model, checkpoint
