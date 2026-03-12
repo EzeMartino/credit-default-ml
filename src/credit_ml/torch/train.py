@@ -18,6 +18,7 @@ RAW_PATH = Path("data/raw/credit_default.xls")
 MODEL_OUT = Path("models/torch_model.pt")
 SCALER_OUT = Path("models/torch_scaler.joblib")
 METADATA_OUT = Path("models/torch_metadata.json")
+CHECKPOINT_OUT = Path("models/torch_checkpoint.pt")
 
 def train_torch_model(
     epochs: int = 10,
@@ -107,14 +108,27 @@ def train_torch_model(
     metadata = {
         "model_type": "torch_mlp",
         "input_dim": X.shape[1],
-        "training_timestamp_utc": pd.Timestamp.utcnow().isoformat(),
+        "training_timestamp_utc": pd.Timestamp.now('UTC').isoformat(),
         "validation_roc_auc": float(val_roc_auc),
         "scaler_path": "models/torch_scaler.joblib",
         "weights_path": "models/torch_model.pt",
     }
-    
+
+    METADATA_OUT.parent.mkdir(parents=True, exist_ok=True)
     with open(METADATA_OUT, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2)
+    
+    # Save torch checkpoint
+    checkpoint = {
+        "epoch": epoch,
+        "model_state_dict": model.state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
+        "validation_roc_auc": val_roc_auc,
+        "input_dim": X.shape[1],
+    }
+
+    CHECKPOINT_OUT.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(checkpoint, CHECKPOINT_OUT)
     
     print(f"[OK] Torch model saved to {MODEL_OUT.resolve()}")
     
