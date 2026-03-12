@@ -22,8 +22,15 @@ End-to-end Machine Learning project including:
 - Calibration analysis
 
 ### Model Artifacts
+Artifacts produced by training include:
 - Serialized pipeline (pipeline.joblib)
 - Metadata with threshold and model info
+
+PyTorch experiment artifacts:
+- `torch_model.pt`
+- `torch_scaler.joblib`
+- `torch_metadata.json`
+- `torch_checkpoint.pt`
 
 ### Inference Layer
 - FastAPI batch prediction endpoint
@@ -73,8 +80,12 @@ Raw Data
 Feature Engineering
    ↓
 Model Training (Logistic Regression)
+   ├─ Logistic Regression (production model)
+   └─ PyTorch MLP (experimental)
    ↓
 Artifact Export (pipeline.joblib + metadata.json)
+   ├─ pipeline.joblib + metadata.json
+   └─ torch_model.pt + scaler + checkpoint
    ↓
 FastAPI Service
    ↓
@@ -195,6 +206,16 @@ Random Forest showed slightly better calibration, but the difference was not eno
 
 See `docs/model-evaluation.md` for full details.
 
+### Model Performance Overview
+
+| Model | ROC-AUC |
+|------|------|
+| Logistic Regression | ~0.756 |
+| Random Forest | ~0.780 |
+| PyTorch MLP | ~0.770 |
+
+Logistic Regression is currently deployed due to interpretability and operational simplicity, despite Random Forest achieving the highest ranking performance.
+
 
 ### Reproducibility
 
@@ -280,7 +301,8 @@ Endpoints:
 ### Quick API Test
 
 #### Using curl:
-```curl -X POST "http://127.0.0.1:8010/predict" \
+```bash
+curl -X POST "http://127.0.0.1:8010/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "records": [
@@ -314,7 +336,8 @@ Endpoints:
 ```
 
 #### Using Python:
-```import requests
+```python
+import requests
 
 payload = {
     "records": [
