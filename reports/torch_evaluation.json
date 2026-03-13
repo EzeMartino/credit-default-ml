@@ -1,0 +1,7 @@
+{
+  "model_type": "torch_mlp",
+  "auc_roc": 0.7870974620129844,
+  "auc_pr": 0.55236202882819,
+  "brier_score": 0.13397325575351715,
+  "n_samples": 30000
+}
