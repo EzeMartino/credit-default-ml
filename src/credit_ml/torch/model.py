@@ -1,5 +1,4 @@
 import torch.nn as nn
-import torch
 
 class CreditMLP(nn.Module):
     def __init__(self, input_dim: int):
