@@ -185,6 +185,7 @@ See `docs/model-selection.md` for the full comparison.
 
 See `docs/model-card.md` for detailed model documentation.
 
+
 ### Feature Engineering
 
 The project includes engineered features such as `credit_utilization` and an interaction term `utilization_x_pay0`.
@@ -212,10 +213,11 @@ See `docs/model-evaluation.md` for full details.
 |------|------|
 | Logistic Regression | ~0.756 |
 | Random Forest | ~0.780 |
-| PyTorch MLP | ~0.770 |
+| PyTorch MLP | ~0.780 |
 
 Logistic Regression is currently deployed due to interpretability and operational simplicity, despite Random Forest achieving the highest ranking performance.
 
+See `docs/model-comparison.md` for the full performance comparison between Logistic Regression, Random Forest and the Torch MLP model.
 
 ### Reproducibility
 
