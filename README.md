@@ -211,13 +211,17 @@ See `docs/model-evaluation.md` for full details.
 
 | Model | ROC-AUC |
 |------|------|
-| Logistic Regression | ~0.756 |
-| Random Forest | ~0.780 |
-| PyTorch MLP | ~0.780 |
+| Logistic Regression | ~0.750 |
+| Random Forest | ~0.772 |
+| PyTorch MLP | ~0.770 |
 
 Logistic Regression is currently deployed due to interpretability and operational simplicity, despite Random Forest achieving the highest ranking performance.
 
 See `docs/model-comparison.md` for the full performance comparison between Logistic Regression, Random Forest and the Torch MLP model.
+
+### Model ROC Comparison
+
+![ROC Comparison](reports/model_roc_comparison.png)
 
 ### Reproducibility
 
