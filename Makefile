@@ -3,7 +3,7 @@ setup:
 	pip install -e .
 	
 train:
-	python -m credit-ml.modeling.train
+	python -m credit_ml.modeling.train
 
 test:
 	pytest -q

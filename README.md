@@ -79,7 +79,7 @@ Raw Data
    ↓
 Feature Engineering
    ↓
-Model Training (Logistic Regression)
+Model Training
    ├─ Logistic Regression (production model)
    └─ PyTorch MLP (experimental)
    ↓
@@ -134,18 +134,19 @@ Performance is never discussed without:
 
 
 ## Setup
-
+```
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.dev.txt
 pip install -e .
-
+```
 
 ## Quick Start
-
-python -m credit_ml.training.train
+```
+python -m credit_ml.modeling.train
 uvicorn src.credit_ml.api.main:app --reload --port 8010
 Swagger docs: `http://127.0.0.1:8010/docs`
+```
 
 Optional developer shortcuts using Makefile:
 
@@ -288,11 +289,13 @@ Features:
 - Threshold-based classification using the threshold stored in model metadata
 
 ### Run API locally
+```
 pip install -r requirements.dev.txt
 pip install -e .
 python -m credit_ml.modeling.train
 pytest -q
 uvicorn src.credit_ml.api.main:app --reload
+```
 
 Open API docs:
 http://127.0.0.1:8010/docs
@@ -445,12 +448,14 @@ This ensures the service runs with identical dependencies across environments.
 
 
 ### Build image
+```
 docker build -t credit-ml-api:latest .
-
+```
 
 ### Run container
+```
 docker run --rm -p 8010:8010 credit-ml-api:latest
-
+```
 
 ### Dockerized Architecture
 
@@ -468,8 +473,9 @@ This reduces container size and avoids OS-specific packages such as pywinpty.
 The project includes a pytest suite covering training, metadata, API behavior and validation rules.
 
 Run tests with:
-
+```
 pytest -q
+```
 
 The test suite validates:
 
@@ -495,9 +501,11 @@ This ensures that model artifacts and the API remain reproducible and stable.
 ## Documentation & Utilities
 
 Generate automated dataset report:
+```
 python src/data/load\_and\_profile.py
 --input data/raw/credit\_default.xls
 --out reports/profile\_summary.json
+```
 
 This script validates:
 * column structure
@@ -509,6 +517,8 @@ This script validates:
 Additional technical details are available in:
 - `docs/decision-log.md`
 - `docs/model-selection.md`
+- `docs/model-card.md`
+- `docs/model-comparison.md`
 
 
 ## Limitations
